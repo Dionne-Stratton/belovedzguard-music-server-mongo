@@ -34,6 +34,12 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   user_playlists: [playListSchema], // array of playListSchema
+  favorite_songs: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Song",
+    },
+  ],
 });
 
 userSchema.pre("save", function (next) {
