@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 const mongoose = require("mongoose");
-const User = mongoose.model("User");
+const MusicUser = mongoose.model("MusicUser");
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
@@ -18,7 +18,7 @@ module.exports = (req, res, next) => {
 
     const { userId } = payload;
 
-    const user = await User.findById(userId);
+    const user = await MusicUser.findById(userId);
     req.user = user;
     next();
   });

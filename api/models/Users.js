@@ -19,7 +19,7 @@ const playListSchema = new mongoose.Schema({
   songs: [createPlaylistSchema], // array of songs in the playlist
 });
 
-const userSchema = new mongoose.Schema({
+const MusicUserSchema = new mongoose.Schema({
   email: {
     type: String,
     unique: true,
@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
   ],
 });
 
-userSchema.pre("save", function (next) {
+MusicUserSchema.pre("save", function (next) {
   const user = this;
   if (!user.isModified("password")) {
     return next();
@@ -64,7 +64,7 @@ userSchema.pre("save", function (next) {
   });
 });
 
-userSchema.methods.comparePassword = function (pwd) {
+MusicUserSchema.methods.comparePassword = function (pwd) {
   const user = this;
 
   return new Promise((resolve, reject) => {
@@ -82,4 +82,4 @@ userSchema.methods.comparePassword = function (pwd) {
   });
 };
 
-mongoose.model("User", userSchema);
+mongoose.model("MusicUser", MusicUserSchema);

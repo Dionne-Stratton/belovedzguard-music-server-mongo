@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const mongoose = require("mongoose");
-const User = mongoose.model("User");
+const MusicUser = mongoose.model("MusicUser");
 const jwt = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 
@@ -11,14 +11,14 @@ router.post("/register", async (req, res) => {
     return res.status(422).send({ error: "email and password are required" });
   }
 
-  const user = await User.findOne({ email });
+  const user = await MusicUser.findOne({ email });
 
   if (user) {
     return res.status(500).json({ message: "email in use" });
   }
 
   try {
-    const user = new User(req.body);
+    const user = new MusicUser(req.body);
     await user.save();
 
     const token = jwt.sign({ userId: user._id }, secret);
@@ -35,7 +35,7 @@ router.post("/login", async (req, res) => {
     return res.status(422).send({ error: "provide email and password" });
   }
 
-  const user = await User.findOne({ email });
+  const user = await MusicUser.findOne({ email });
 
   try {
     await user.comparePassword(password);
@@ -47,7 +47,7 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/users", async (req, res) => {
-  const users = await User.find();
+  const users = await MusicUser.find();
   res.send(users);
 });
 

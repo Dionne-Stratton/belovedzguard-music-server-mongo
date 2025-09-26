@@ -4,13 +4,12 @@ const SongModel = require("../models/Songs");
 router.post("/", (req, res) => {
   const saveSong = SongModel({
     title: req.body.title,
-    youTubeUrl: req.body.youTubeUrl,
-    perspective: req.body.perspective,
+    genre: req.body.genre,
+    mp3: req.body.mp3,
+    songThumbnail: req.body.songThumbnail,
+    videoThumbnail: req.body.videoThumbnail,
+    youTube: req.body.youTube,
     lyrics: req.body.lyrics,
-    songThumbnailURL: req.body.songThumbnailURL,
-    videoThumbnailURL: req.body.videoThumbnailURL,
-    musicFileURL: req.body.musicFileURL,
-    sunoUrl: req.body.sunoUrl,
   });
   saveSong
     .save()
