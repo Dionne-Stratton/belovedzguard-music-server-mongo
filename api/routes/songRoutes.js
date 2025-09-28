@@ -2,15 +2,7 @@ const router = require("express").Router();
 const SongModel = require("../models/Songs");
 
 router.post("/", (req, res) => {
-  const saveSong = SongModel({
-    title: req.body.title,
-    genre: req.body.genre,
-    mp3: req.body.mp3,
-    songThumbnail: req.body.songThumbnail,
-    videoThumbnail: req.body.videoThumbnail,
-    youTube: req.body.youTube,
-    lyrics: req.body.lyrics,
-  });
+  const saveSong = SongModel(req.body);
   saveSong
     .save()
     .then((res) => {
@@ -20,6 +12,16 @@ router.post("/", (req, res) => {
       console.log(err, "here is the error");
     });
   res.send("song is saved");
+});
+
+router.post("/bulk-add", async (req, res) => {
+  try {
+    const songs = req.body;
+    const savedSongs = await SongModel.insertMany(songs);
+    res.status(201).json(savedSongs);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 });
 
 router.get("/", async (req, res) => {
@@ -32,9 +34,13 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
+  const { id } = req.params;
   try {
-    const singleSong = await SongModel.find({ _id: req.params.id });
-    console.log("get by ID", req.params.id);
+    const singleSong = await SongModel.findById(id);
+    if (!singleSong) {
+      return res.status(404).send({ error: "song not found" });
+    }
+    console.log("get by ID", id);
     res.send(singleSong);
   } catch (error) {
     res.status(500).send(error.message);
@@ -42,22 +48,23 @@ router.get("/:id", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
   try {
-    await SongModel.deleteOne({ _id: req.params.id });
-    console.log(req.params.id);
+    await SongModel.findByIdAndDelete(id);
+    console.log(id);
     res.send(`deleted`);
   } catch (error) {
-    console.log(req.params.id);
+    console.log(id);
     res.status(500).send(error.message);
   }
 });
 
 router.put("/:id", async (req, res) => {
+  const { id } = req.params;
   try {
-    await SongModel.updateOne({ _id: req.params.id }, req.body);
+    const song = await SongModel.findByIdAndUpdate(id, req.body, { new: true });
     //sending back the newly updated array of songs
-    let songListing = await SongModel.find({ _id: req.params.id });
-    res.send(songListing);
+    res.send(song);
   } catch (error) {
     res.status(500).send(error.message);
   }
