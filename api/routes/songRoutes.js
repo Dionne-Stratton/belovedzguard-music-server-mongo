@@ -26,7 +26,7 @@ router.post("/bulk-add", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const allData = await SongModel.find();
+    const allData = await SongModel.find().sort({ _id: -1 }).lean();
     res.json(allData);
   } catch (error) {
     res.status(500).send(error.message);
