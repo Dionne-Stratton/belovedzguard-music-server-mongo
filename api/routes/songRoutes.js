@@ -1,17 +1,59 @@
 const router = require("express").Router();
 const SongModel = require("../models/Songs");
 
-router.post("/", (req, res) => {
-  const saveSong = SongModel(req.body);
-  saveSong
-    .save()
-    .then((res) => {
-      console.log("song is saved", res);
-    })
-    .catch((err) => {
-      console.log(err, "here is the error");
-    });
-  res.send("song is saved");
+// router.post("/", (req, res) => {
+//   const saveSong = SongModel(req.body);
+//   saveSong
+//     .save()
+//     .then((res) => {
+//       console.log("song is saved", res);
+//     })
+//     .catch((err) => {
+//       console.log(err, "here is the error");
+//     });
+//   res.send("song is saved");
+// });
+
+function slugifyTitle(title) {
+  return title
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/['’]/g, "") // remove apostrophes
+    .replace(/\s+/g, "-"); // spaces → dashes
+}
+
+function makeSongData({ title, genre, youTube = null }) {
+  const slug = slugifyTitle(title);
+
+  const base = "https://media.belovedzguard.com";
+
+  return {
+    title,
+    genre,
+    mp3: `${base}/music-files/${slug}.mp3`,
+    songThumbnail: `${base}/song-thumbnails/${slug}.jpg`,
+    videoThumbnail: `${base}/video-thumbnails/${slug}.jpg`,
+    youTube,
+    lyrics: `${base}/lyrics/${slug}.md`,
+  };
+}
+
+router.post("/", async (req, res) => {
+  try {
+    const { title, genre, youTube } = req.body;
+
+    if (!title || !genre) {
+      return res.status(400).send("Title and genre are required");
+    }
+
+    const songData = makeSongData({ title, genre, youTube });
+    const newSong = new SongModel(songData);
+    await newSong.save();
+
+    res.status(201).json(newSong);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 });
 
 router.post("/bulk-add", async (req, res) => {
