@@ -47,4 +47,17 @@ router.delete("/", async (req, res) => {
   }
 });
 
+//playlist CRUD routes
+
+//create:
+router.post("/playlists", async (req, res) => {
+  try {
+    const newPlaylist = new Playlist(req.body);
+    await newPlaylist.save();
+    res.status(201).send(newPlaylist);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
 module.exports = router;

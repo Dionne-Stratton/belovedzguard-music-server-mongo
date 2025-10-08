@@ -1,19 +1,6 @@
 const router = require("express").Router();
 const SongModel = require("../models/Songs");
 
-// router.post("/", (req, res) => {
-//   const saveSong = SongModel(req.body);
-//   saveSong
-//     .save()
-//     .then((res) => {
-//       console.log("song is saved", res);
-//     })
-//     .catch((err) => {
-//       console.log(err, "here is the error");
-//     });
-//   res.send("song is saved");
-// });
-
 function slugifyTitle(title) {
   return title
     .toLowerCase()
@@ -32,6 +19,7 @@ function makeSongData({ title, genre, youTube = null }) {
     genre,
     mp3: `${base}/music-files/${slug}.mp3`,
     songThumbnail: `${base}/song-thumbnails/${slug}.jpg`,
+    animatedSongThumbnail: `${base}/animated-song-thumbnails/${slug}.mp4`,
     videoThumbnail: `${base}/video-thumbnails/${slug}.jpg`,
     youTube,
     lyrics: `${base}/lyrics/${slug}.md`,

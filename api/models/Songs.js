@@ -6,6 +6,7 @@ const songSchema = new mongoose.Schema({
   genre: String,
   mp3: String,
   songThumbnail: String,
+  animatedSongThumbnail: String,
   videoThumbnail: String,
   youTube: String,
   lyrics: String,
