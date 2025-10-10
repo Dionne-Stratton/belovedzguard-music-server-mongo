@@ -1,24 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
-const createPlaylistSchema = new mongoose.Schema({
-  song_id: {
-    // reference to song id
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Song",
-    required: true,
-  },
-  songRank: Number, // position in the playlist
-});
-
-const playListSchema = new mongoose.Schema({
-  playlistName: {
-    type: String,
-    required: true,
-  },
-  songs: [createPlaylistSchema], // array of songs in the playlist
-});
-
 const MusicUserSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -31,9 +13,7 @@ const MusicUserSchema = new mongoose.Schema({
   },
   displayName: {
     type: String,
-    required: true,
   },
-  user_playlists: [playListSchema], // array of playListSchema
   favorite_songs: [
     {
       type: mongoose.Schema.Types.ObjectId,
