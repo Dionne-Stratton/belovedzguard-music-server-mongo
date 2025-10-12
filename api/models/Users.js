@@ -3,13 +3,6 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
 const MusicUserSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    unique: true,
-    sparse: true, // allows null/undefined email
-  },
-  password: { type: String }, // optional for Auth0 accounts
-  displayName: String,
   auth0Id: { type: String, unique: true, sparse: true },
   favorite_songs: [
     {
