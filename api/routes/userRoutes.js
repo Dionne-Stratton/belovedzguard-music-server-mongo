@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const MusicUser = mongoose.model("MusicUser");
 const Playlist = mongoose.model("Playlist");
 const requireAuth = require("../middleware/requireAuth");
-
+// Apply authentication middleware to all routes in this router
 router.use(...requireAuth);
 
 // ===============================
