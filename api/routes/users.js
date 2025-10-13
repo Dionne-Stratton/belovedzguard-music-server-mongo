@@ -1,7 +1,7 @@
 // routes/userRoutes.js
 const router = require("express").Router();
 const mongoose = require("mongoose");
-const MusicUser = mongoose.model("MusicUser");
+const User = mongoose.model("MusicUser");
 const Playlist = mongoose.model("Playlist");
 const requireAuth = require("../middleware/requireAuth");
 // Apply authentication middleware to all routes in this router
@@ -11,42 +11,43 @@ router.use(...requireAuth);
 // PROFILE CRUD ROUTES
 // ===============================
 
-// Read profile
+//read:
 router.get("/", async (req, res) => {
   try {
-    const user = req.userId;
-    if (!user) return res.status(404).send({ error: "Profile not found" });
-    res.send(user);
+    const currentProfile = await User.findOne({ _id: req.user._id });
+    if (!currentProfile) {
+      return res.status(404).send({ error: "profile not found" });
+    }
+    res.send(currentProfile);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    res.status(500).send(error.message);
   }
 });
 
-// Update profile
+//update:
 router.put("/", async (req, res) => {
   try {
-    const user = req.userId;
-    if (!user) return res.status(404).send({ error: "Profile not found" });
-
-    Object.assign(user, req.body);
-    await user.save();
-
-    res.send(user);
+    await User.updateOne({ _id: req.user._id }, req.body);
+    let updatedProfile = await User.findOne({ _id: req.user._id });
+    if (!updatedProfile) {
+      return res.status(404).send({ error: "profile not found" });
+    }
+    res.send(updatedProfile);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    res.status(500).send(error.message);
   }
 });
 
-// Delete profile
+//delete:
 router.delete("/", async (req, res) => {
   try {
-    const user = req.userId;
-    if (!user) return res.status(404).send({ error: "Profile not found" });
-
-    await user.deleteOne();
-    res.send({ message: "Profile deleted" });
+    const deleteProfile = await User.deleteOne({ _id: req.user._id });
+    if (!deleteProfile) {
+      return res.status(404).send({ error: "profile not found" });
+    }
+    res.send(`${deleteProfile.deletedCount} profile deleted`);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    res.status(500).send(error.message);
   }
 });
 

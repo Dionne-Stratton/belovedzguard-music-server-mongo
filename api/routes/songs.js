@@ -1,5 +1,6 @@
 const router = require("express").Router();
-const SongModel = require("../models/Songs");
+const mongoose = require("mongoose");
+const Song = mongoose.model("Song");
 
 function slugifyTitle(title) {
   return title
@@ -35,7 +36,7 @@ router.post("/", async (req, res) => {
     }
 
     const songData = makeSongData({ title, genre, youTube });
-    const newSong = new SongModel(songData);
+    const newSong = new Song(songData);
     await newSong.save();
 
     res.status(201).json(newSong);
@@ -47,7 +48,7 @@ router.post("/", async (req, res) => {
 router.post("/bulk-add", async (req, res) => {
   try {
     const songs = req.body;
-    const savedSongs = await SongModel.insertMany(songs);
+    const savedSongs = await Song.insertMany(songs);
     res.status(201).json(savedSongs);
   } catch (error) {
     res.status(500).send(error.message);
@@ -56,7 +57,7 @@ router.post("/bulk-add", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const allData = await SongModel.find().sort({ _id: -1 }).lean();
+    const allData = await Song.find().sort({ _id: -1 }).lean();
     res.json(allData);
   } catch (error) {
     res.status(500).send(error.message);
@@ -66,7 +67,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const singleSong = await SongModel.findById(id);
+    const singleSong = await Song.findById(id);
     if (!singleSong) {
       return res.status(404).send({ error: "song not found" });
     }
@@ -80,7 +81,7 @@ router.get("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    await SongModel.findByIdAndDelete(id);
+    await Song.findByIdAndDelete(id);
     console.log(id);
     res.send(`deleted`);
   } catch (error) {
@@ -92,7 +93,7 @@ router.delete("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const song = await SongModel.findByIdAndUpdate(id, req.body, { new: true });
+    const song = await Song.findByIdAndUpdate(id, req.body, { new: true });
     //sending back the newly updated array of songs
     res.send(song);
   } catch (error) {

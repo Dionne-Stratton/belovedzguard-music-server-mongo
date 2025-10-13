@@ -1,7 +1,8 @@
 require("dotenv").config();
-require("./api/models/Users");
-require("./api/models/Songs");
-require("./api/models/Playlists");
+require("./api/models/User");
+require("./api/models/Song");
+require("./api/models/Playlist");
+require("./api/models/Album");
 const server = require("./api/server");
 const mongoose = require("mongoose");
 const PORT = process.env.PORT || 9000;
