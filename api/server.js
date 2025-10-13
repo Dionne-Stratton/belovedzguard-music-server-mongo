@@ -12,14 +12,9 @@ const server = express();
 server.use(express.json());
 server.use(cors());
 
-//legacy from before, can be removed later
-server.use("/songs", requireAuth, songRouter);
-server.use("/users", requireAuth, userRouter);
-
-// New API routes
 server.use("/api/songs", requireAuth, songRouter);
 server.use("/api/users", requireAuth, userRouter);
-server.use("/api/albums", albumsRouter);
+server.use("/api/albums", requireAuth, albumsRouter);
 server.use("/api/public", public);
 
 server.use((err, req, res, next) => {
