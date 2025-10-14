@@ -56,11 +56,9 @@ const ensureUser = async (req, res, next) => {
   try {
     const payload = req.auth?.payload || req.auth;
     const sub = payload?.sub;
-    const displayName = payload?.name || "New User";
 
     console.log("🔸 Auth0 payload:", JSON.stringify(payload, null, 2));
     console.log("🔸 Auth0 sub:", sub);
-    console.log("🔸 displayName:", displayName);
 
     if (!sub) {
       console.warn("⚠️ Missing sub claim in token payload");
@@ -78,7 +76,7 @@ const ensureUser = async (req, res, next) => {
       try {
         user = await MusicUser.create({
           auth0Id: sub,
-          displayName,
+          favorite_songs: [],
         });
         console.log(`✅ Created new MusicUser ${user._id} for sub ${sub}`);
       } catch (createErr) {
