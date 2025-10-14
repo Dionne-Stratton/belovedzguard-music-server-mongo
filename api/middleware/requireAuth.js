@@ -11,7 +11,19 @@ if (!AUTH0_DOMAIN || !AUTH0_AUDIENCE) {
   console.warn("⚠️ AUTH0_DOMAIN or AUTH0_AUDIENCE missing from environment.");
 }
 
-// 1️⃣ Verify JWT signature / issuer
+// Always log the incoming Authorization header
+const logAuthHeader = (req, res, next) => {
+  const auth = req.headers.authorization || "(none)";
+  console.log(
+    `➡️  ${req.method} ${req.originalUrl} | Auth header: ${auth.slice(
+      0,
+      50
+    )}...`
+  );
+  next();
+};
+
+// Verify JWT signature / issuer
 const checkJwt = jwt({
   secret: jwksRsa.expressJwtSecret({
     cache: true,
@@ -22,9 +34,20 @@ const checkJwt = jwt({
   audience: AUTH0_AUDIENCE,
   issuer: `https://${AUTH0_DOMAIN}/`,
   algorithms: ["RS256"],
+}).unless({
+  path: [], // none skipped
 });
 
-// 2️⃣ Ensure corresponding MusicUser exists
+//  Catch any JWT 401s explicitly
+const jwtErrorHandler = (err, req, res, next) => {
+  if (err.name === "UnauthorizedError") {
+    console.error("❌ JWT rejected:", err.code, err.message);
+    return res.status(401).json({ error: "Invalid or mismatched token" });
+  }
+  next(err);
+};
+
+// Ensure corresponding MusicUser exists
 const ensureUser = async (req, res, next) => {
   console.log("🔹 ensureUser middleware hit");
 
@@ -82,4 +105,4 @@ const ensureUser = async (req, res, next) => {
   }
 };
 
-module.exports = [checkJwt, ensureUser];
+module.exports = [logAuthHeader, checkJwt, jwtErrorHandler, ensureUser];
