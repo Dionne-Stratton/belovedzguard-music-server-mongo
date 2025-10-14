@@ -4,11 +4,13 @@ const jwksRsa = require("jwks-rsa");
 const mongoose = require("mongoose");
 const MusicUser = mongoose.model("MusicUser");
 
-const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
+const AUTH0_DOMAIN_DEV = process.env.AUTH0_DOMAIN_DEV;
 const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE;
 
-if (!AUTH0_DOMAIN || !AUTH0_AUDIENCE) {
-  console.warn("⚠️ AUTH0_DOMAIN or AUTH0_AUDIENCE missing from environment.");
+if (!AUTH0_DOMAIN_DEV || !AUTH0_AUDIENCE) {
+  console.warn(
+    "⚠️ AUTH0_DOMAIN_DEV or AUTH0_AUDIENCE missing from environment."
+  );
 }
 
 // Always log the incoming Authorization header
@@ -29,10 +31,10 @@ const checkJwt = jwt({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
-    jwksUri: `https://${AUTH0_DOMAIN}/.well-known/jwks.json`,
+    jwksUri: `https://${AUTH0_DOMAIN_DEV}/.well-known/jwks.json`,
   }),
   audience: AUTH0_AUDIENCE,
-  issuer: `https://${AUTH0_DOMAIN}/`,
+  issuer: `https://${AUTH0_DOMAIN_DEV}/`,
   algorithms: ["RS256"],
 }).unless({
   path: [], // none skipped
