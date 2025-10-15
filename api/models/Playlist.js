@@ -3,11 +3,7 @@ const mongoose = require("mongoose");
 const playlistSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    owner: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "MusicUser",
-      required: true,
-    },
+    owner: { type: String, required: true }, // stores Auth0 ID instead of ObjectId
     songs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Song" }],
   },
   { timestamps: true }

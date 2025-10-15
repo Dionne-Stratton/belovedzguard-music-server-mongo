@@ -2,18 +2,19 @@ const mongoose = require("mongoose");
 const Playlist = mongoose.model("Playlist");
 
 // ===============================
-// PLAYLIST CONTROLLERS (Mostly User-specific)
+// PLAYLIST CONTROLLERS (User-specific)
 // ===============================
 
 // CREATE playlist for current user
 exports.createPlaylist = async (req, res) => {
   const { name, songs } = req.body;
   try {
-    const userId = req.userId;
-    if (!userId)
-      return res
-        .status(404)
-        .json({ error: "User not found for playlist creation" });
+    const auth0Id = req.auth0Id; // new
+    const userId = req.userId; // legacy reference (still attached by middleware)
+
+    if (!auth0Id) {
+      return res.status(401).json({ error: "Missing Auth0 user ID" });
+    }
 
     if (!name || name.trim() === "" || !Array.isArray(songs)) {
       return res
@@ -23,7 +24,7 @@ exports.createPlaylist = async (req, res) => {
 
     const newPlaylist = new Playlist({
       ...req.body,
-      owner: userId, // tie it to Mongo user
+      owner: auth0Id, // store Auth0 ID instead of Mongo _id
     });
 
     await newPlaylist.save();
@@ -36,10 +37,11 @@ exports.createPlaylist = async (req, res) => {
 // READ all playlists for current user
 exports.getUserPlaylists = async (req, res) => {
   try {
-    const userId = req.userId;
-    if (!userId) return res.status(404).json({ error: "User not found" });
+    const auth0Id = req.auth0Id;
+    if (!auth0Id)
+      return res.status(401).json({ error: "Missing Auth0 user ID" });
 
-    const playlists = await Playlist.find({ owner: userId })
+    const playlists = await Playlist.find({ owner: auth0Id })
       .populate("songs")
       .sort({ _id: -1 });
 
@@ -64,13 +66,14 @@ exports.getUserPlaylistById = async (req, res) => {
 // UPDATE playlist (owned by current user)
 exports.updateUserPlaylist = async (req, res) => {
   try {
-    const userId = req.userId;
-    if (!userId) return res.status(404).json({ error: "User not found" });
+    const auth0Id = req.auth0Id;
+    if (!auth0Id)
+      return res.status(401).json({ error: "Missing Auth0 user ID" });
 
     const playlist = await Playlist.findById(req.params.id);
     if (!playlist) return res.status(404).json({ error: "Playlist not found" });
 
-    if (playlist.owner.toString() !== userId.toString()) {
+    if (playlist.owner !== auth0Id) {
       return res.status(403).json({ error: "Not authorized" });
     }
 
@@ -86,13 +89,14 @@ exports.updateUserPlaylist = async (req, res) => {
 // DELETE playlist (owned by current user)
 exports.deleteUserPlaylist = async (req, res) => {
   try {
-    const userId = req.userId;
-    if (!userId) return res.status(404).json({ error: "User not found" });
+    const auth0Id = req.auth0Id;
+    if (!auth0Id)
+      return res.status(401).json({ error: "Missing Auth0 user ID" });
 
     const playlist = await Playlist.findById(req.params.id);
     if (!playlist) return res.status(404).json({ error: "Playlist not found" });
 
-    if (playlist.owner.toString() !== userId.toString()) {
+    if (playlist.owner !== auth0Id) {
       return res.status(403).json({ error: "Not authorized" });
     }
 
