@@ -106,3 +106,42 @@ exports.deleteUserPlaylist = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// ADD song to playlist (owned by current user)
+exports.addSongToPlaylist = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { songId } = req.body;
+    const auth0Id = req.auth0Id;
+
+    if (!auth0Id) {
+      return res.status(401).json({ error: "Missing Auth0 user ID" });
+    }
+
+    if (!songId) {
+      return res.status(400).json({ error: "Song ID is required" });
+    }
+
+    // Find the playlist and verify ownership
+    const playlist = await Playlist.findOne({
+      _id: id,
+      owner: auth0Id,
+    });
+
+    if (!playlist) {
+      return res.status(404).json({ error: "Playlist not found" });
+    }
+
+    // Add song ID to playlist using $push (allows duplicates)
+    const updatedPlaylist = await Playlist.findByIdAndUpdate(
+      id,
+      { $push: { songs: songId } },
+      { new: true }
+    ).populate("songs");
+
+    res.json(updatedPlaylist);
+  } catch (error) {
+    console.error("Error adding song to playlist:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
