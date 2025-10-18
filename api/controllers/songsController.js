@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Song = mongoose.model("Song");
+const { isAdmin } = require("../middleware/adminAuth");
 
 // Helper: convert title to slug
 function slugifyTitle(title) {
@@ -35,6 +36,16 @@ function makeSongData({ title, genre, youTube = null }) {
 exports.createSong = async (req, res) => {
   try {
     const { title, genre, youTube } = req.body;
+    const auth0Id = req.auth0Id;
+
+    if (!auth0Id) {
+      return res.status(401).json({ error: "Missing Auth0 user ID" });
+    }
+
+    if (!isAdmin(auth0Id)) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
     if (!title || !genre) {
       return res.status(400).json({ error: "Title and genre are required" });
     }
@@ -77,7 +88,17 @@ exports.getSongById = async (req, res) => {
 // UPDATE song
 exports.updateSong = async (req, res) => {
   const { id } = req.params;
+  const auth0Id = req.auth0Id;
+
   try {
+    if (!auth0Id) {
+      return res.status(401).json({ error: "Missing Auth0 user ID" });
+    }
+
+    if (!isAdmin(auth0Id)) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
     const song = await Song.findByIdAndUpdate(id, req.body, { new: true });
     if (!song) return res.status(404).json({ error: "Song not found" });
     res.json(song);
@@ -89,7 +110,17 @@ exports.updateSong = async (req, res) => {
 // DELETE song
 exports.deleteSong = async (req, res) => {
   const { id } = req.params;
+  const auth0Id = req.auth0Id;
+
   try {
+    if (!auth0Id) {
+      return res.status(401).json({ error: "Missing Auth0 user ID" });
+    }
+
+    if (!isAdmin(auth0Id)) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
     const song = await Song.findByIdAndDelete(id);
     if (!song) return res.status(404).json({ error: "Song not found" });
     res.json({ message: "Song deleted" });

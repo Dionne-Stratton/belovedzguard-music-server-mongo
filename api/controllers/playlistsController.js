@@ -28,7 +28,10 @@ exports.createPlaylist = async (req, res) => {
     });
 
     await newPlaylist.save();
-    res.status(201).json(newPlaylist);
+
+    // Remove owner field from response
+    const { owner, ...playlistWithoutOwner } = newPlaylist.toObject();
+    res.status(201).json(playlistWithoutOwner);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -45,7 +48,13 @@ exports.getUserPlaylists = async (req, res) => {
       .populate("songs")
       .sort({ _id: -1 });
 
-    res.json(playlists || []);
+    // Remove owner field from all playlists
+    const playlistsWithoutOwner = playlists.map((playlist) => {
+      const { owner, ...playlistWithoutOwner } = playlist.toObject();
+      return playlistWithoutOwner;
+    });
+
+    res.json(playlistsWithoutOwner || []);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -57,7 +66,9 @@ exports.getUserPlaylistById = async (req, res) => {
     const playlist = await Playlist.findById(req.params.id).populate("songs");
     if (!playlist) return res.status(404).json({ error: "Playlist not found" });
 
-    res.json(playlist);
+    // Remove owner field from response
+    const { owner, ...playlistWithoutOwner } = playlist.toObject();
+    res.json(playlistWithoutOwner);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -80,7 +91,9 @@ exports.updateUserPlaylist = async (req, res) => {
     Object.assign(playlist, req.body);
     await playlist.save();
 
-    res.json(playlist);
+    // Remove owner field from response
+    const { owner, ...playlistWithoutOwner } = playlist.toObject();
+    res.json(playlistWithoutOwner);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -139,7 +152,9 @@ exports.addSongToPlaylist = async (req, res) => {
       { new: true }
     ).populate("songs");
 
-    res.json(updatedPlaylist);
+    // Remove owner field from response
+    const { owner, ...playlistWithoutOwner } = updatedPlaylist.toObject();
+    res.json(playlistWithoutOwner);
   } catch (error) {
     console.error("Error adding song to playlist:", error);
     res.status(500).json({ error: "Internal server error" });

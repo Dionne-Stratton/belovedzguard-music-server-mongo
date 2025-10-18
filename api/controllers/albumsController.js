@@ -1,9 +1,19 @@
 const mongoose = require("mongoose");
 const Album = mongoose.model("Album");
+const { isAdmin } = require("../middleware/adminAuth");
 
 exports.createAlbum = async (req, res) => {
   try {
     const { title, songs } = req.body;
+    const auth0Id = req.auth0Id;
+
+    if (!auth0Id) {
+      return res.status(401).json({ error: "Missing Auth0 user ID" });
+    }
+
+    if (!isAdmin(auth0Id)) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
 
     if (!title || !songs) {
       return res.status(400).json({ error: "Title and songs are required" });
@@ -42,6 +52,16 @@ exports.getAlbumById = async (req, res) => {
 
 exports.updateAlbum = async (req, res) => {
   try {
+    const auth0Id = req.auth0Id;
+
+    if (!auth0Id) {
+      return res.status(401).json({ error: "Missing Auth0 user ID" });
+    }
+
+    if (!isAdmin(auth0Id)) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
     const album = await Album.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
@@ -54,6 +74,16 @@ exports.updateAlbum = async (req, res) => {
 
 exports.deleteAlbum = async (req, res) => {
   try {
+    const auth0Id = req.auth0Id;
+
+    if (!auth0Id) {
+      return res.status(401).json({ error: "Missing Auth0 user ID" });
+    }
+
+    if (!isAdmin(auth0Id)) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
     const album = await Album.findByIdAndDelete(req.params.id);
     if (!album) return res.status(404).json({ error: "Album not found" });
     res.json({ message: "Album deleted" });
