@@ -103,13 +103,12 @@ A secure REST API for music streaming with user playlists and admin content mana
 
 ### User
 
-| Data           | Type       | Required  | Description                       |
-| -------------- | ---------- | --------- | --------------------------------- |
-| \_id           | ObjectId   | generated | Unique user identifier            |
-| auth0Id        | String     | yes       | Auth0 user identifier             |
-| favorite_songs | [ObjectId] | no        | Array of favorite song references |
-| createdAt      | Date       | generated | User creation timestamp           |
-| updatedAt      | Date       | generated | User last modified timestamp      |
+| Data      | Type     | Required  | Description                  |
+| --------- | -------- | --------- | ---------------------------- |
+| \_id      | ObjectId | generated | Unique user identifier       |
+| auth0Id   | String   | yes       | Auth0 user identifier        |
+| createdAt | Date     | generated | User creation timestamp      |
+| updatedAt | Date     | generated | User last modified timestamp |
 
 ---
 
