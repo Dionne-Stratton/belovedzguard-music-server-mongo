@@ -125,6 +125,7 @@ _No authentication required_
 | GET    | `/api/public/albums`        | Get all albums                       |
 | GET    | `/api/public/albums/:id`    | Get single album by ID               |
 | GET    | `/api/public/playlists/:id` | Get playlist by ID (songs populated) |
+| POST   | `/api/public/contact`       | Send contact form email              |
 
 ### Song Routes
 
@@ -216,26 +217,66 @@ AUTH0_AUDIENCE=your-api-identifier
 # Admin Configuration
 ADMIN_AUTH0_ID=google-oauth2|your-admin-user-id
 
+# Email Configuration (for contact form)
+EMAIL_SERVICE=gmail
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password
+CONTACT_EMAIL=your-email@gmail.com
+
 ```
 
 ### Required Environment Variables
 
-| Variable         | Description               | Example                           |
-| ---------------- | ------------------------- | --------------------------------- |
-| `MONGODB_URL`    | MongoDB connection string | `mongodb://localhost:27017/music` |
-| `AUTH0_DOMAIN`   | Your Auth0 domain         | `your-app.auth0.com`              |
-| `AUTH0_AUDIENCE` | Auth0 API identifier      | `https://api.belovedzguard.com`   |
-| `ADMIN_AUTH0_ID` | Admin user's Auth0 ID     | `google-oauth2'                   |
+| Variable         | Description                | Example                           |
+| ---------------- | -------------------------- | --------------------------------- |
+| `MONGODB_URL`    | MongoDB connection string  | `mongodb://localhost:27017/music` |
+| `AUTH0_DOMAIN`   | Your Auth0 domain          | `your-app.auth0.com`              |
+| `AUTH0_AUDIENCE` | Auth0 API identifier       | `https://api.belovedzguard.com`   |
+| `ADMIN_AUTH0_ID` | Admin user's Auth0 ID      | `google-oauth2'                   |
+| `EMAIL_USER`     | Email account username     | `your-email@gmail.com`            |
+| `EMAIL_PASSWORD` | Email account app password | `your-16-char-app-password`       |
 
 ### Optional Environment Variables
 
-| Variable         | Description              |
-| ---------------- | ------------------------ |
-| `MEDIA_BASE_URL` | Base URL for media files |
+| Variable         | Description                                                     | Default      |
+| ---------------- | --------------------------------------------------------------- | ------------ |
+| `MEDIA_BASE_URL` | Base URL for media files                                        | -            |
+| `EMAIL_SERVICE`  | Email service provider                                          | `gmail`      |
+| `CONTACT_EMAIL`  | Recipient email for contact form (if different from EMAIL_USER) | `EMAIL_USER` |
 
 ---
 
 ## API Response Examples
+
+### Contact Form Submission
+
+**Request Body:**
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "subject": "Question about your music",
+  "message": "Hi, I love your work! Can I use your music in my project?"
+}
+```
+
+**Success Response:**
+
+```json
+{
+  "success": true,
+  "message": "Your message has been sent successfully!"
+}
+```
+
+**Error Response (Missing Fields):**
+
+```json
+{
+  "error": "All fields are required: name, email, subject, and message"
+}
+```
 
 ### Successful Song Creation (Admin)
 
