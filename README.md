@@ -118,14 +118,14 @@ A secure REST API for music streaming with user playlists and admin content mana
 
 _No authentication required_
 
-| Method | Endpoint                    | Description                          |
-| ------ | --------------------------- | ------------------------------------ |
-| GET    | `/api/public/songs`         | Get all songs                        |
-| GET    | `/api/public/songs/:id`     | Get single song by ID                |
-| GET    | `/api/public/albums`        | Get all albums                       |
-| GET    | `/api/public/albums/:id`    | Get single album by ID               |
-| GET    | `/api/public/playlists/:id` | Get playlist by ID (songs populated) |
-| POST   | `/api/public/contact`       | Send contact form email              |
+| Method | Endpoint                    | Description                                    |
+| ------ | --------------------------- | ---------------------------------------------- |
+| GET    | `/api/public/songs`         | Get all songs                                  |
+| GET    | `/api/public/songs/:id`     | Get single song by ID                          |
+| GET    | `/api/public/albums`        | Get all albums                                 |
+| GET    | `/api/public/albums/:id`    | Get single album by ID                         |
+| GET    | `/api/public/playlists/:id` | Get playlist by ID (songs populated)           |
+| POST   | `/api/public/contact`       | Send contact form email (rate limited: 3/hour) |
 
 ### Song Routes
 
@@ -270,11 +270,14 @@ CONTACT_EMAIL=your-email@gmail.com
 }
 ```
 
-**Error Response (Missing Fields):**
+**Error Response (Rate Limited):**
 
 ```json
 {
-  "error": "All fields are required: name, email, subject, and message"
+  "error": "Too many contact form submissions. Please try again in an hour.",
+  "retryAfter": "1 hour",
+  "limit": 3,
+  "windowMs": "1 hour"
 }
 ```
 
