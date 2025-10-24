@@ -2,6 +2,7 @@ const router = require("express").Router();
 const albumsController = require("../controllers/albumsController");
 const songsController = require("../controllers/songsController");
 const playlistsController = require("../controllers/playlistsController");
+const contactController = require("../controllers/contactController");
 
 // ===============================
 // PUBLIC ROUTES (no auth required)
@@ -18,5 +19,8 @@ router.get("/songs/:id", songsController.getSongById);
 // PLAYLISTS (PUBLIC)
 // Exposes songs in the playlist but hides owner for privacy
 router.get("/playlists/:id", playlistsController.getUserPlaylistById);
+
+// CONTACT
+router.post("/contact", contactController.sendContactEmail);
 
 module.exports = router;
