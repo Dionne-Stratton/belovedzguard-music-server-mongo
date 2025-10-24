@@ -3,6 +3,7 @@ const albumsController = require("../controllers/albumsController");
 const songsController = require("../controllers/songsController");
 const playlistsController = require("../controllers/playlistsController");
 const contactController = require("../controllers/contactController");
+const contactFormLimiter = require("../middleware/rateLimiter");
 
 // ===============================
 // PUBLIC ROUTES (no auth required)
@@ -21,6 +22,6 @@ router.get("/songs/:id", songsController.getSongById);
 router.get("/playlists/:id", playlistsController.getUserPlaylistById);
 
 // CONTACT
-router.post("/contact", contactController.sendContactEmail);
+router.post("/contact", contactFormLimiter, contactController.sendContactEmail);
 
 module.exports = router;
