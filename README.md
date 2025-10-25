@@ -36,6 +36,8 @@ A secure REST API for music streaming with user playlists and admin content mana
 - **JWT** - JSON Web Tokens for secure API access
 - **CORS** - Cross-origin resource sharing
 - **Jwks-rsa** - JSON Web Key Set validation
+- **Nodemailer** - Email service for contact form
+- **Express-rate-limit** - Rate limiting middleware
 
 ---
 
@@ -243,6 +245,37 @@ CONTACT_EMAIL=your-email@gmail.com
 | `MEDIA_BASE_URL` | Base URL for media files                                        | -            |
 | `EMAIL_SERVICE`  | Email service provider                                          | `gmail`      |
 | `CONTACT_EMAIL`  | Recipient email for contact form (if different from EMAIL_USER) | `EMAIL_USER` |
+
+---
+
+## Deployment
+
+This API is deployed on **Heroku** and automatically deploys from the main branch.
+
+### Heroku Setup
+
+1. **Connect GitHub repository** to Heroku app
+2. **Set environment variables** in Heroku dashboard:
+
+   - `MONGODB_URL`
+   - `AUTH0_DOMAIN`
+   - `AUTH0_AUDIENCE`
+   - `ADMIN_AUTH0_ID`
+   - `EMAIL_SERVICE`
+   - `EMAIL_USER`
+   - `EMAIL_PASSWORD`
+   - `CONTACT_EMAIL` (optional)
+
+3. **Manual deployment** (if needed):
+   ```bash
+   heroku git:remote -a your-app-name
+   git push heroku main
+   ```
+
+### Production URL
+
+- **API Base URL:** `https://belovedzguard-ebf890192e0e.herokuapp.com`
+- **Contact Endpoint:** `https://belovedzguard-ebf890192e0e.herokuapp.com/api/public/contact`
 
 ---
 
