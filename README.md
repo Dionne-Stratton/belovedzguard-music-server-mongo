@@ -80,6 +80,8 @@ A secure REST API for music streaming with user playlists and admin content mana
 | videoThumbnail        | String   | no        | Video thumbnail image URL    |
 | youTube               | String   | no        | YouTube video URL            |
 | lyrics                | String   | no        | Lyrics file URL              |
+| description           | String   | no        | Song description             |
+| verse                 | String   | no        | Featured verse or excerpt    |
 
 ### Album
 
@@ -326,7 +328,9 @@ This API is deployed on **Heroku** and automatically deploys from the main branc
   "animatedSongThumbnail": "https://media.belovedzguard.com/animated-song-thumbnails/amazing-grace.mp4",
   "videoThumbnail": "https://media.belovedzguard.com/video-thumbnails/amazing-grace.jpg",
   "youTube": "https://youtube.com/watch?v=example",
-  "lyrics": "https://media.belovedzguard.com/lyrics/amazing-grace.md"
+  "lyrics": "https://media.belovedzguard.com/lyrics/amazing-grace.md",
+  "description": "A timeless hymn of grace and redemption",
+  "verse": "Amazing grace, how sweet the sound, That saved a wretch like me"
 }
 ```
 
