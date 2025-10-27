@@ -12,7 +12,7 @@ function slugifyTitle(title) {
 }
 
 // Helper: create derived song data
-function makeSongData({ title, genre, youTube = null }) {
+function makeSongData({ title, genre, youTube = null, description = null, verse = null }) {
   const slug = slugifyTitle(title);
   const base = process.env.MEDIA_BASE_URL || "https://media.belovedzguard.com";
 
@@ -25,6 +25,8 @@ function makeSongData({ title, genre, youTube = null }) {
     videoThumbnail: `${base}/video-thumbnails/${slug}.jpg`,
     youTube,
     lyrics: `${base}/lyrics/${slug}.md`,
+    description,
+    verse,
   };
 }
 
@@ -35,7 +37,7 @@ function makeSongData({ title, genre, youTube = null }) {
 // CREATE song
 exports.createSong = async (req, res) => {
   try {
-    const { title, genre, youTube } = req.body;
+    const { title, genre, youTube, description, verse } = req.body;
     const auth0Id = req.auth0Id;
 
     if (!auth0Id) {
@@ -51,7 +53,7 @@ exports.createSong = async (req, res) => {
     }
 
     // Duplicate titles are allowed (versions differ by thumbnails)
-    const songData = makeSongData({ title, genre, youTube });
+    const songData = makeSongData({ title, genre, youTube, description, verse });
     const newSong = new Song(songData);
     await newSong.save();
 
