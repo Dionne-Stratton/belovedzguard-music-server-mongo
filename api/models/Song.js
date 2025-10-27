@@ -10,6 +10,8 @@ const songSchema = new mongoose.Schema({
   videoThumbnail: String,
   youTube: String,
   lyrics: String,
+  description: String,
+  verse: String,
 });
 
 module.exports = SongModel = mongoose.model("Song", songSchema);
