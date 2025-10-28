@@ -9,6 +9,7 @@ const songSchema = new mongoose.Schema({
   animatedSongThumbnail: String,
   videoThumbnail: String,
   youTube: String,
+  bandcamp: String,
   lyrics: String,
   description: String,
   verse: String,

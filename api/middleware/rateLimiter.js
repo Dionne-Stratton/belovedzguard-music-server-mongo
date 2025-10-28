@@ -1,4 +1,4 @@
-const rateLimit = require("express-rate-limit");
+const { rateLimit, ipKeyGenerator } = require("express-rate-limit");
 
 // Rate limiting for contact form - 3 submissions per IP per hour
 const contactFormLimiter = rateLimit({
@@ -12,10 +12,8 @@ const contactFormLimiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   // Skip successful requests (only count failed ones)
   skipSuccessfulRequests: false,
-  // Custom key generator to use IP address
-  keyGenerator: (req) => {
-    return req.ip || req.connection.remoteAddress;
-  },
+  // Custom key generator to use IP address with proper IPv6 handling
+  keyGenerator: ipKeyGenerator,
   // Custom handler for when limit is exceeded
   handler: (req, res) => {
     res.status(429).json({
