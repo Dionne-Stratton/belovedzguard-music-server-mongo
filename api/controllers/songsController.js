@@ -18,6 +18,7 @@ function makeSongData({
   youTube = null,
   description = null,
   verse = null,
+  isDraft = false,
 }) {
   const slug = slugifyTitle(title);
   const base = process.env.MEDIA_BASE_URL || "https://media.belovedzguard.com";
@@ -34,6 +35,7 @@ function makeSongData({
     lyrics: `${base}/lyrics/${slug}.md`,
     description,
     verse,
+    isDraft,
   };
 }
 
@@ -45,6 +47,11 @@ function makeSongData({
 exports.createSong = async (req, res) => {
   try {
     const { title, genre, youTube, description, verse } = req.body;
+    const rawIsDraft = req.body.isDraft ?? false;
+    const isDraft =
+      typeof rawIsDraft === "string"
+        ? rawIsDraft === "true"
+        : Boolean(rawIsDraft);
     const auth0Id = req.auth0Id;
 
     if (!auth0Id) {
@@ -66,6 +73,7 @@ exports.createSong = async (req, res) => {
       youTube,
       description,
       verse,
+      isDraft,
     });
     const newSong = new Song(songData);
     await newSong.save();
@@ -79,7 +87,10 @@ exports.createSong = async (req, res) => {
 // READ all songs
 exports.getAllSongs = async (req, res) => {
   try {
-    const allData = await Song.find().sort({ _id: -1 }).lean();
+    const includeDrafts = req.auth0Id && isAdmin(req.auth0Id);
+    const filter = includeDrafts ? {} : { isDraft: { $ne: true } };
+
+    const allData = await Song.find(filter).sort({ _id: -1 }).lean();
     res.json(allData);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -91,7 +102,8 @@ exports.getSongById = async (req, res) => {
   const { id } = req.params;
   try {
     const singleSong = await Song.findById(id);
-    if (!singleSong) {
+    const includeDrafts = req.auth0Id && isAdmin(req.auth0Id);
+    if (!singleSong || (singleSong.isDraft && !includeDrafts)) {
       return res.status(404).json({ error: "Song not found" });
     }
     res.json(singleSong);

@@ -10,6 +10,7 @@ const songSchema = new mongoose.Schema({
   videoThumbnail: String,
   youTube: String,
   bandcamp: String,
+  isDraft: { type: Boolean, default: false },
   lyrics: String,
   description: String,
   verse: String,

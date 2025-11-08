@@ -9,3 +9,4 @@
 - [x] Implement rate limiting for contact form endpoint (3 submissions per IP per hour recommended)
 - [x] Add contact form endpoints
 - [x] Implement rate limiting for contact form endpoint (3 submissions per IP per hour recommended)
+- [x] Add draft support for songs and albums (isDraft flag + public filtering)

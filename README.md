@@ -69,29 +69,32 @@ A secure REST API for music streaming with user playlists and admin content mana
 
 ### Song
 
-| Data                  | Type     | Required  | Description                  |
-| --------------------- | -------- | --------- | ---------------------------- |
-| \_id                  | ObjectId | generated | Unique song identifier       |
-| title                 | String   | yes       | Song title                   |
-| genre                 | String   | yes       | Musical genre                |
-| mp3                   | String   | no        | MP3 file URL                 |
-| songThumbnail         | String   | no        | Static thumbnail image URL   |
-| animatedSongThumbnail | String   | no        | Animated thumbnail video URL |
-| videoThumbnail        | String   | no        | Video thumbnail image URL    |
-| youTube               | String   | no        | YouTube video URL            |
-| lyrics                | String   | no        | Lyrics file URL              |
-| description           | String   | no        | Song description             |
-| verse                 | String   | no        | Featured verse or excerpt    |
+| Data                  | Type     | Required  | Description                            |
+| --------------------- | -------- | --------- | -------------------------------------- |
+| \_id                  | ObjectId | generated | Unique song identifier                 |
+| title                 | String   | yes       | Song title                             |
+| genre                 | String   | yes       | Musical genre                          |
+| mp3                   | String   | no        | MP3 file URL                           |
+| songThumbnail         | String   | no        | Static thumbnail image URL             |
+| animatedSongThumbnail | String   | no        | Animated thumbnail video URL           |
+| videoThumbnail        | String   | no        | Video thumbnail image URL              |
+| youTube               | String   | no        | YouTube video URL                      |
+| bandcamp              | String   | no        | Bandcamp track URL (slug-based)        |
+| lyrics                | String   | no        | Lyrics file URL                        |
+| description           | String   | no        | Song description                       |
+| verse                 | String   | no        | Featured verse or excerpt              |
+| isDraft               | Boolean  | no        | Draft flag (hidden from public routes) |
 
 ### Album
 
-| Data      | Type       | Required  | Description                   |
-| --------- | ---------- | --------- | ----------------------------- |
-| \_id      | ObjectId   | generated | Unique album identifier       |
-| title     | String     | yes       | Album title                   |
-| songs     | [ObjectId] | no        | Array of song references      |
-| createdAt | Date       | generated | Album creation timestamp      |
-| updatedAt | Date       | generated | Album last modified timestamp |
+| Data      | Type       | Required  | Description                                  |
+| --------- | ---------- | --------- | -------------------------------------------- |
+| \_id      | ObjectId   | generated | Unique album identifier                      |
+| title     | String     | yes       | Album title                                  |
+| songs     | [ObjectId] | no        | Array of song references                     |
+| isDraft   | Boolean    | no        | Draft flag (hidden from public routes)       |
+| createdAt | Date       | generated | Album creation timestamp                     |
+| updatedAt | Date       | generated | Album last modified timestamp                |
 
 ### Playlist
 
@@ -124,10 +127,10 @@ _No authentication required_
 
 | Method | Endpoint                    | Description                                    |
 | ------ | --------------------------- | ---------------------------------------------- |
-| GET    | `/api/public/songs`         | Get all songs                                  |
-| GET    | `/api/public/songs/:id`     | Get single song by ID                          |
-| GET    | `/api/public/albums`        | Get all albums                                 |
-| GET    | `/api/public/albums/:id`    | Get single album by ID                         |
+| GET    | `/api/public/songs`         | Get all published songs (drafts hidden)        |
+| GET    | `/api/public/songs/:id`     | Get single published song by ID                |
+| GET    | `/api/public/albums`        | Get all published albums (drafts hidden)       |
+| GET    | `/api/public/albums/:id`    | Get single published album by ID               |
 | GET    | `/api/public/playlists/:id` | Get playlist by ID (songs populated)           |
 | POST   | `/api/public/contact`       | Send contact form email (rate limited: 3/hour) |
 
