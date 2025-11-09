@@ -1,4 +1,3 @@
-const { url } = require("inspector");
 const mongoose = require("mongoose");
 
 const songSchema = new mongoose.Schema({
@@ -10,6 +9,11 @@ const songSchema = new mongoose.Schema({
   videoThumbnail: String,
   youTube: String,
   bandcamp: String,
+  mp3Key: String,
+  songThumbnailKey: String,
+  animatedSongThumbnailKey: String,
+  videoThumbnailKey: String,
+  lyricsKey: String,
   isDraft: { type: Boolean, default: false },
   lyrics: String,
   description: String,

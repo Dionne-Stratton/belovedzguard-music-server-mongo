@@ -4,6 +4,7 @@ const cors = require("cors");
 const songRouter = require("./routes/songs");
 const userRouter = require("./routes/users");
 const albumsRouter = require("./routes/albums");
+const uploadsRouter = require("./routes/uploads");
 const public = require("./routes/public");
 const requireAuth = require("./middleware/requireAuth");
 
@@ -15,6 +16,7 @@ server.use(cors());
 server.use("/api/songs", requireAuth, songRouter);
 server.use("/api/users", requireAuth, userRouter);
 server.use("/api/albums", requireAuth, albumsRouter);
+server.use("/api/uploads", requireAuth, uploadsRouter);
 server.use("/api/public", public);
 
 server.use((err, req, res, next) => {

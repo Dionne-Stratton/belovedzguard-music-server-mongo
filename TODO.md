@@ -2,6 +2,8 @@
 
 ## Current
 
+- [ ] Confirm Cloudflare R2 env vars are configured in each environment
+
 ## Completed
 
 - [x] Add "bandcamp" field to song model and update the song creation endpoint to include and create this field with base url of https://belovedzguard.bandcamp.com/track/ followed by the slug of the song
@@ -10,3 +12,4 @@
 - [x] Add contact form endpoints
 - [x] Implement rate limiting for contact form endpoint (3 submissions per IP per hour recommended)
 - [x] Add draft support for songs and albums (isDraft flag + public filtering)
+- [x] Add Cloudflare R2 presigned upload endpoint and storage key handling

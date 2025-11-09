@@ -21,6 +21,7 @@ A secure REST API for music streaming with user playlists and admin content mana
   - [Public Routes](#public-routes)
   - [Song Routes](#song-routes)
   - [Album Routes](#album-routes)
+  - [Upload Routes](#upload-routes)
   - [User Routes](#user-routes)
   - [Playlist Routes](#playlist-routes)
 - [Installation and Setup](#installation-and-setup)
@@ -87,14 +88,14 @@ A secure REST API for music streaming with user playlists and admin content mana
 
 ### Album
 
-| Data      | Type       | Required  | Description                                  |
-| --------- | ---------- | --------- | -------------------------------------------- |
-| \_id      | ObjectId   | generated | Unique album identifier                      |
-| title     | String     | yes       | Album title                                  |
-| songs     | [ObjectId] | no        | Array of song references                     |
-| isDraft   | Boolean    | no        | Draft flag (hidden from public routes)       |
-| createdAt | Date       | generated | Album creation timestamp                     |
-| updatedAt | Date       | generated | Album last modified timestamp                |
+| Data      | Type       | Required  | Description                            |
+| --------- | ---------- | --------- | -------------------------------------- |
+| \_id      | ObjectId   | generated | Unique album identifier                |
+| title     | String     | yes       | Album title                            |
+| songs     | [ObjectId] | no        | Array of song references               |
+| isDraft   | Boolean    | no        | Draft flag (hidden from public routes) |
+| createdAt | Date       | generated | Album creation timestamp               |
+| updatedAt | Date       | generated | Album last modified timestamp          |
 
 ### Playlist
 
@@ -146,6 +147,32 @@ _Authentication required - Admin only for CREATE/UPDATE/DELETE_
 | PUT    | `/api/songs/:id` | Admin | Update song by ID     |
 | DELETE | `/api/songs/:id` | Admin | Delete song by ID     |
 
+#### Create / Update Song Payload
+
+```json
+{
+  "title": "Amazing Grace",
+  "genre": "Gospel",
+  "youTube": "https://youtube.com/watch?v=example",
+  "description": "Optional description",
+  "verse": "Amazing grace...",
+  "isDraft": false,
+  "assets": {
+    "mp3": {
+      "key": "music-files/amazing-grace.mp3",
+      "publicUrl": "https://media.belovedzguard.com/music-files/amazing-grace.mp3"
+    },
+    "songThumbnail": {
+      "key": "song-thumbnails/amazing-grace.jpg",
+      "publicUrl": "https://media.belovedzguard.com/song-thumbnails/amazing-grace.jpg"
+    }
+  }
+}
+```
+
+- `assets` is optional but recommended for new uploads; any missing asset keeps its previous value.
+- Response returns the full song document, including stored `mp3Key`, `songThumbnailKey`, etc.
+
 ### Album Routes
 
 _Authentication required - Admin only for CREATE/UPDATE/DELETE_
@@ -158,6 +185,86 @@ _Authentication required - Admin only for CREATE/UPDATE/DELETE_
 | PUT    | `/api/albums/:id` | Admin | Update album by ID     |
 | DELETE | `/api/albums/:id` | Admin | Delete album by ID     |
 
+#### Create / Update Album Payload
+
+```json
+{
+  "title": "Greatest Hits",
+  "songs": ["64a1b2c3d4e5f6789012345", "64a1b2c3d4e5f6789012346"],
+  "isDraft": true
+}
+```
+
+- `songs` must be an array of song ObjectIds.
+- Response returns the album document with populated song references when requested via GET.
+
+### Upload Routes
+
+_Authentication required - Admin only_
+
+| Method | Endpoint               | Auth  | Description                               |
+| ------ | ---------------------- | ----- | ----------------------------------------- |
+| POST   | `/api/uploads/presign` | Admin | Request a presigned URL for asset uploads |
+
+#### Presigned Upload Workflow
+
+1. **Request a presign**  
+   Send a `POST /api/uploads/presign` request with JSON body:
+
+   ```json
+   {
+     "assetType": "mp3",
+     "fileName": "amazing-grace.mp3"
+   }
+   ```
+
+   - `assetType` must be one of `mp3`, `songThumbnail`, `animatedThumbnail`, `videoThumbnail`, `lyrics`.
+   - `fileName` must already be slugified; the server will ensure the correct extension and folder.
+
+2. **Use the response**  
+   Response fields:
+
+   - `uploadUrl`: signed PUT URL (valid for 5 minutes). Upload the file with a `PUT` request and matching `Content-Type`.
+   - `key`: final object key in R2 (e.g. `music-files/amazing-grace.mp3`).
+   - `publicUrl`: the CDN/base URL where the asset will be served.
+   - `field`: the property name to include in the song payload (`mp3`, `songThumbnail`, etc.).
+   - `expiresIn`: seconds until the presign expires (always `300`).
+
+   Example response:
+
+   ```json
+   {
+     "uploadUrl": "https://a....r2.cloudflarestorage.com/music-files/amazing-grace.mp3?...",
+     "key": "music-files/amazing-grace.mp3",
+     "publicUrl": "https://media.belovedzguard.com/music-files/amazing-grace.mp3",
+     "field": "mp3",
+     "expiresIn": 300
+   }
+   ```
+
+3. **Create or update the song**  
+   When calling `POST /api/songs` or `PUT /api/songs/:id`, include the returned key and publicUrl inside an `assets` object:
+   ```json
+   {
+     "title": "Amazing Grace",
+     "genre": "Gospel",
+     "description": "A timeless hymn",
+     "assets": {
+       "mp3": {
+         "key": "music-files/amazing-grace.mp3",
+         "publicUrl": "https://media.belovedzguard.com/music-files/amazing-grace.mp3"
+       },
+       "songThumbnail": {
+         "key": "song-thumbnails/amazing-grace.jpg",
+         "publicUrl": "https://media.belovedzguard.com/song-thumbnails/amazing-grace.jpg"
+       }
+     },
+     "isDraft": true
+   }
+   ```
+   - Any asset omitted from the `assets` object will keep its existing value (on update) or default to the legacy generated URL (on create).
+   - The server copies the `publicUrl` onto the top-level field (`mp3`, `songThumbnail`, etc.) and stores the `key` in `mp3Key`, `songThumbnailKey`, and so on for future reference.
+
 ### User Routes
 
 _Authentication required_
@@ -167,6 +274,17 @@ _Authentication required_
 | GET    | `/api/users` | User | Get current user profile    |
 | PUT    | `/api/users` | User | Update current user profile |
 | DELETE | `/api/users` | User | Delete current user account |
+
+#### Update User Payload
+
+```json
+{
+  "displayName": "Beloved ZGuard",
+  "avatarUrl": "https://example.com/avatar.jpg"
+}
+```
+
+- Only whitelisted fields are updated; others are ignored.
 
 ### Playlist Routes
 
@@ -180,6 +298,24 @@ _Authentication required - User can only manage their own playlists_
 | PUT    | `/api/users/playlists/:id`         | User | Update playlist by ID     |
 | DELETE | `/api/users/playlists/:id`         | User | Delete playlist by ID     |
 | PATCH  | `/api/users/playlists/:id/addSong` | User | Add song to playlist      |
+
+#### Create / Update Playlist Payload
+
+```json
+{
+  "name": "Sunday Worship",
+  "theme": "Faith",
+  "songs": ["64a1b2c3d4e5f6789012345", "64a1b2c3d4e5f6789012346"]
+}
+```
+
+#### Add Song to Playlist Payload
+
+```json
+{
+  "songId": "64a1b2c3d4e5f6789012345"
+}
+```
 
 ---
 
@@ -234,22 +370,27 @@ CONTACT_EMAIL=your-email@gmail.com
 
 ### Required Environment Variables
 
-| Variable         | Description                | Example                           |
-| ---------------- | -------------------------- | --------------------------------- |
-| `MONGODB_URL`    | MongoDB connection string  | `mongodb://localhost:27017/music` |
-| `AUTH0_DOMAIN`   | Your Auth0 domain          | `your-app.auth0.com`              |
-| `AUTH0_AUDIENCE` | Auth0 API identifier       | `https://api.belovedzguard.com`   |
-| `ADMIN_AUTH0_ID` | Admin user's Auth0 ID      | `google-oauth2'                   |
-| `EMAIL_USER`     | Email account username     | `your-email@gmail.com`            |
-| `EMAIL_PASSWORD` | Email account app password | `your-16-char-app-password`       |
+| Variable                          | Description                                        | Example                                         |
+| --------------------------------- | -------------------------------------------------- | ----------------------------------------------- | ----------- |
+| `MONGODB_URL`                     | MongoDB connection string                          | `mongodb://localhost:27017/music`               |
+| `AUTH0_DOMAIN`                    | Your Auth0 domain                                  | `your-app.auth0.com`                            |
+| `AUTH0_AUDIENCE`                  | Auth0 API identifier                               | `https://api.belovedzguard.com`                 |
+| `ADMIN_AUTH0_ID`                  | Admin user's Auth0 ID                              | `google-oauth2                                  | 1234567890` |
+| `EMAIL_USER`                      | Email account username                             | `your-email@gmail.com`                          |
+| `EMAIL_PASSWORD`                  | Email account app password                         | `your-16-char-app-password`                     |
+| `CLOUDFLARE_R2_ACCESS_KEY_ID`     | Cloudflare R2 access key for S3 operations         | `K0ExampleAccessKey`                            |
+| `CLOUDFLARE_R2_SECRET_ACCESS_KEY` | Cloudflare R2 secret key for S3 operations         | `exampleSecretKeyValue`                         |
+| `CLOUDFLARE_R2_BUCKET`            | R2 bucket name for uploads                         | `belovedzguard-media`                           |
+| `CLOUDFLARE_R2_ENDPOINT`          | R2 S3 endpoint                                     | `https://<account-id>.r2.cloudflarestorage.com` |
+| `CLOUDFLARE_R2_PUBLIC_BASE_URL`   | Public base URL (CDN) for accessing uploaded media | `https://media.belovedzguard.com`               |
 
 ### Optional Environment Variables
 
-| Variable         | Description                                                     | Default      |
-| ---------------- | --------------------------------------------------------------- | ------------ |
-| `MEDIA_BASE_URL` | Base URL for media files                                        | -            |
-| `EMAIL_SERVICE`  | Email service provider                                          | `gmail`      |
-| `CONTACT_EMAIL`  | Recipient email for contact form (if different from EMAIL_USER) | `EMAIL_USER` |
+| Variable                   | Description                                                     | Default      |
+| -------------------------- | --------------------------------------------------------------- | ------------ |
+| `EMAIL_SERVICE`            | Email service provider                                          | `gmail`      |
+| `CONTACT_EMAIL`            | Recipient email for contact form (if different from EMAIL_USER) | `EMAIL_USER` |
+| `CLOUDFLARE_R2_ACCOUNT_ID` | Cloudflare account identifier (used by some tooling)            | -            |
 
 ---
 

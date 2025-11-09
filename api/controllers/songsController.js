@@ -11,32 +11,57 @@ function slugifyTitle(title) {
     .replace(/\s+/g, "-"); // spaces → dashes
 }
 
-// Helper: create derived song data
-function makeSongData({
-  title,
-  genre,
-  youTube = null,
-  description = null,
-  verse = null,
-  isDraft = false,
-}) {
-  const slug = slugifyTitle(title);
-  const base = process.env.MEDIA_BASE_URL || "https://media.belovedzguard.com";
+const BANDCAMP_BASE_URL = "https://belovedzguard.bandcamp.com/track";
+const ASSET_FIELD_CONFIG = [
+  { assetKey: "mp3", keyField: "mp3Key" },
+  { assetKey: "songThumbnail", keyField: "songThumbnailKey" },
+  { assetKey: "animatedSongThumbnail", keyField: "animatedSongThumbnailKey" },
+  { assetKey: "videoThumbnail", keyField: "videoThumbnailKey" },
+  { assetKey: "lyrics", keyField: "lyricsKey" },
+];
 
-  return {
-    title,
-    genre,
-    mp3: `${base}/music-files/${slug}.mp3`,
-    songThumbnail: `${base}/song-thumbnails/${slug}.jpg`,
-    animatedSongThumbnail: `${base}/animated-song-thumbnails/${slug}.mp4`,
-    videoThumbnail: `${base}/video-thumbnails/${slug}.jpg`,
-    youTube,
-    bandcamp: `https://belovedzguard.bandcamp.com/track/${slug}`,
-    lyrics: `${base}/lyrics/${slug}.md`,
-    description,
-    verse,
-    isDraft,
-  };
+function extractAssetFields(body = {}) {
+  const assets = body.assets;
+  if (!assets || typeof assets !== "object") return {};
+
+  return ASSET_FIELD_CONFIG.reduce((acc, { assetKey, keyField }) => {
+    const payload = assets[assetKey];
+    if (payload && typeof payload === "object") {
+      if (Object.prototype.hasOwnProperty.call(payload, "publicUrl")) {
+        acc[assetKey] = payload.publicUrl;
+      }
+      if (Object.prototype.hasOwnProperty.call(payload, "key")) {
+        acc[keyField] = payload.key;
+      }
+    }
+    return acc;
+  }, {});
+}
+
+function withAssetDefaults(body = {}) {
+  const assetsFromPayload = extractAssetFields(body);
+  const base = {};
+
+  ASSET_FIELD_CONFIG.forEach(({ assetKey, keyField }) => {
+    if (!Object.prototype.hasOwnProperty.call(assetsFromPayload, assetKey)) {
+      if (Object.prototype.hasOwnProperty.call(body, assetKey)) {
+        base[assetKey] = body[assetKey];
+      }
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(assetsFromPayload, keyField)) {
+      if (Object.prototype.hasOwnProperty.call(body, keyField)) {
+        base[keyField] = body[keyField];
+      }
+    }
+  });
+
+  return { ...base, ...assetsFromPayload };
+}
+
+function buildBandcampUrl(title) {
+  const slug = slugifyTitle(title);
+  return `${BANDCAMP_BASE_URL}/${slug}`;
 }
 
 // ===============================
@@ -67,15 +92,17 @@ exports.createSong = async (req, res) => {
     }
 
     // Duplicate titles are allowed (versions differ by thumbnails)
-    const songData = makeSongData({
+    const assetFields = withAssetDefaults(req.body);
+    const newSong = new Song({
       title,
       genre,
       youTube,
       description,
       verse,
+      ...assetFields,
+      bandcamp: buildBandcampUrl(title),
       isDraft,
     });
-    const newSong = new Song(songData);
     await newSong.save();
 
     res.status(201).json(newSong);
@@ -126,7 +153,16 @@ exports.updateSong = async (req, res) => {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    const song = await Song.findByIdAndUpdate(id, req.body, { new: true });
+    const updates = { ...req.body };
+    const assetUpdates = withAssetDefaults(updates);
+    delete updates.assets;
+    Object.assign(updates, assetUpdates);
+
+    if (Object.prototype.hasOwnProperty.call(updates, "title") && !Object.prototype.hasOwnProperty.call(updates, "bandcamp")) {
+      updates.bandcamp = buildBandcampUrl(updates.title);
+    }
+
+    const song = await Song.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
     if (!song) return res.status(404).json({ error: "Song not found" });
     res.json(song);
   } catch (error) {
